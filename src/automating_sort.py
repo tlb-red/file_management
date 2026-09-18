@@ -1,26 +1,44 @@
 import shutil
 import os
-import io
-import config 
-from pathlib import Path
-
+import config
+import pathlib as Path
+ 
+def main():
+    source_folder = input("Enter source folder: ")
+    move_files(source_folder)
     
-def main():  
-    path_origin = input("Enter src: ")
-    path_dest = input("Enter dest: ") 
-    files = os.listdir(path_origin)
-    files = [f for f in files if os.path.isfile(path_dest + '/' + f)]
-
+def move_files(src): 
+    all_files = os.listdir(src)
+    files = [f for f in all_files if os.path.isfile(src + '/' + f)]
+    home_directory = os.environ.get("HOME")
+ 
     for file in files:
-        file_name = file.split(".")
-        file_ext = file_name[1]
-        for i in range(0, len(config.FILE_TYPES)):
-            if file_ext == config.FILE_TYPES[i]:
-                for j in range(0, len(config.FOLDER_TYPES)):
-                    if file_ext.upper() == config.FOLDER_TYPES[j]:
-                        folder_src = path_origin + '/' + file
-                        folder_dest = path_dest + '/' + config.FOLDER_TYPES[j] + '/' + file
-                        shutil.move(folder_src, folder_dest)
+        root, extension = os.path.splitext(file)
+        formatted_extension = extension.split(".")[-1]
+        
+        if formatted_extension in config.DOCUMENT_FILE_TYPES:
+            try:
+                os.mkdir(f"{home_directory}/Documents/{formatted_extension.upper()}")
+            except FileExistsError:
+                print(f"Directory 'f{home_directory}/Documents/{formatted_extension.upper()}' already exists")
+            except PermissionError:
+                print(f"Permission denied: Unable to create 'f{home_directory}/Documents/{formatted_extension.upper()}'")
+
+            source_folder = f"{src}/{file}"
+            destination_folder = f"{home_directory}/Documents/{formatted_extension.upper()}/{file}"
+            shutil.move(source_folder, destination_folder)
+
+        elif formatted_extension in config.IMAGE_FILE_TYPES:
+            try:
+                os.mkdir(f"{home_directory}/Pictures/{formatted_extension.upper()}")
+            except FileExistsError:
+                print(f"Directory 'f{home_directory}/Pictures/{formatted_extension.upper()}' already exists")
+            except PermissionError:
+                print(f"Permission denied: Unable to create 'f{home_directory}/Pictures/{formatted_extension.upper()}'")
+
+            source_folder = f"{src}/{file}"
+            destination_folder = f"{home_directory}/Pictures/{formatted_extension.upper()}/{file}"    
+            shutil.move(source_folder, destination_folder)
 
 if __name__ == "__main__":
     main()
